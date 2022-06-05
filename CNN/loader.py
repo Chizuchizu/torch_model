@@ -3,17 +3,6 @@ import torchvision
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
 
-# from torchvision import transforms
-# train_transform = transforms.Compose([
-#             transforms.RandomHorizontalFlip(),
-#             transforms.RandomCrop(32, 4),
-#             transforms.ToTensor(),
-#         ])
-# val_transform = transforms.Compose([
-#             transforms.ToTensor(),
-#         ])
-#
-# get_CIFAR10()
 
 type_Dataloader = torch.utils.data.dataloader.DataLoader
 type_transform = torchvision.transforms.transforms.Compose

@@ -1,5 +1,4 @@
 import time
-from typing import NamedTuple
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -7,38 +6,21 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.optim
 import torch.utils.data
+from omegaconf import OmegaConf
 from torchvision import transforms
 
 import VGG
 import loader
+from utils import accuracy, AverageMeter
 
-
-class FLAGS(NamedTuple):
-    DEBUG = True
-    BATCH_SIZE = 256
-    # DATA_ROOT = './JAX-ResNet-CIFAR10/workspace/data/'
-    LOG_ROOT = '.'
-    MAX_EPOCH = 200  # ちゃんと回すときは200
-    INIT_LR = 1e-2
-    LR_DECAY = 5e-4
-    MOMENTUM = 0.9
-    N_WORKERS = 12
-    PRINT_FREQ = 50
-    MNIST_MEAN = (0.1307,)
-    MNIST_STD = (0.3081,)
-    CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
-    CIFAR10_STD = (0.2023, 0.1994, 0.2010)
-    CIFAR100_MEAN = (0.5071, 0.4867, 0.4408)
-    CIFAR100_STD = (0.2675, 0.2565, 0.2761)
-    IMAGENET_MEAN = (0.485, 0.456, 0.406)
-    IMAGENET_STD = (0.229, 0.224, 0.225)
+FLAGS = OmegaConf.load("./vgg_debug.yaml")
 
 
 def main():
     cudnn.benchmark = True
 
     normalize = transforms.Normalize(
-        mean=FLAGS.CIFAR100_MEAN,
+        mean=FLAGS.CIFAR10_MEAN,
         std=FLAGS.CIFAR10_STD
     )
     train_transform = transforms.Compose([
@@ -181,41 +163,6 @@ def validate(val_loader, model, criterion):
           .format(top1=top1))
 
     return top1.avg
-
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
-    maxk = max(topk)
-    batch_size = target.size(0)
-
-    _, pred = output.topk(maxk, 1, True, True)
-    pred = pred.t()
-    correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-    res = []
-    for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
-        res.append(correct_k.mul_(100.0 / batch_size))
-    return res
 
 
 if __name__ == "__main__":
