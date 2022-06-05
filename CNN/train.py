@@ -6,12 +6,12 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.optim
 import torch.utils.data
-import wandb
 from omegaconf import OmegaConf
 from torchvision import transforms
 
 import VGG
 import loader
+import wandb
 from utils import accuracy, AverageMeter
 
 conf_list = OmegaConf.from_cli()["--CFG_PATH"]
@@ -23,7 +23,8 @@ if FLAGS.WANDB:
     wandb.init(
         project="torch-model",
         config=dict(FLAGS),
-        save_code=True,
+        # save_code=True,
+        name=FLAGS.NAME
     )
 
 
@@ -53,7 +54,7 @@ def main():
     )
 
     criterion = nn.CrossEntropyLoss().cuda()
-    model = VGG.vgg16()
+    model = getattr(VGG, FLAGS.MODEL)()
     model.cuda()
 
     optimizer = torch.optim.SGD(

@@ -1,5 +1,7 @@
-DEBUG: true
+DEBUG: false
 WANDB: true
+NAME: "sample"
+MODEL: "vgg16"
 BATCH_SIZE: 256
 LOG_ROOT: './Log'
 MAX_EPOCH: 3  # ちゃんと回すときは200
