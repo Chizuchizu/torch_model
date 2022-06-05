@@ -19,8 +19,11 @@ class FLAGS(NamedTuple):
     # DATA_ROOT = './JAX-ResNet-CIFAR10/workspace/data/'
     LOG_ROOT = '.'
     MAX_EPOCH = 200  # ちゃんと回すときは200
-    INIT_LR = 1e-1
+    INIT_LR = 1e-2
+    LR_DECAY = 5e-4
+    MOMENTUM = 0.9
     N_WORKERS = 12
+    PRINT_FREQ = 50
     MNIST_MEAN = (0.1307,)
     MNIST_STD = (0.3081,)
     CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
@@ -63,13 +66,29 @@ def main():
     optimizer = torch.optim.SGD(
         model.parameters(),
         FLAGS.INIT_LR,
+        momentum=FLAGS.MOMENTUM,
         weight_decay=1e-4
     )
+    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        optimizer,
+        milestones=[100, 150],
+        last_epoch=-1
+    )
+
+    best_prec1 = 0
 
     for epoch in range(100):
         print(f"Epoch {epoch + 1}")
 
         train(train_loader, model, criterion, optimizer, epoch)
+        lr_scheduler.step()
+
+        prec1 = validate(val_loader, model, criterion)
+
+        is_best = prec1 > best_prec1
+        best_prec1 = max(prec1, best_prec1)
+
+        # modelのおもみの保存
 
 
 def train(
@@ -106,7 +125,7 @@ def train(
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i % 100 == 0:
+        if i % FLAGS.PRINT_FREQ == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
@@ -114,6 +133,54 @@ def train(
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
                 epoch, i, len(train_loader), batch_time=batch_time,
                 data_time=data_time, loss=losses, top1=top1))
+
+
+def validate(val_loader, model, criterion):
+    """
+    Run evaluation
+    """
+    batch_time = AverageMeter()
+    losses = AverageMeter()
+    top1 = AverageMeter()
+
+    # switch to evaluate mode
+    model.eval()
+
+    end = time.time()
+    with torch.inference_mode():
+        for i, (input, target) in enumerate(val_loader):
+            target = target.cuda()
+            input_var = input.cuda()
+            target_var = target.cuda()
+
+            # compute output
+            output = model(input_var)
+            loss = criterion(output, target_var)
+
+            output = output.float()
+            loss = loss.float()
+
+            # measure accuracy and record loss
+            prec1 = accuracy(output.data, target)[0]
+            losses.update(loss.item(), input.size(0))
+            top1.update(prec1.item(), input.size(0))
+
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+            if i % FLAGS.PRINT_FREQ == 0:
+                print('Test: [{0}/{1}]\t'
+                      'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                      'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
+                    i, len(val_loader), batch_time=batch_time, loss=losses,
+                    top1=top1))
+
+    print(' * Prec@1 {top1.avg:.3f}'
+          .format(top1=top1))
+
+    return top1.avg
 
 
 class AverageMeter(object):
@@ -151,4 +218,5 @@ def accuracy(output, target, topk=(1,)):
     return res
 
 
-main()
+if __name__ == "__main__":
+    main()
