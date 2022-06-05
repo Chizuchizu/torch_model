@@ -1,7 +1,7 @@
 DEBUG: false
 WANDB: true
-NAME: "sample"
-MODEL: "vgg16"
+NAME: "VGG11"
+MODEL: "vgg11"
 BATCH_SIZE: 256
 MAX_EPOCH: 200  # ちゃんと回すときは200
 INIT_LR: 1e-2
