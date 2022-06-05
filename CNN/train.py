@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.optim
 import torch.utils.data
+import wandb
 from omegaconf import OmegaConf
 from torchvision import transforms
 
@@ -13,7 +14,17 @@ import VGG
 import loader
 from utils import accuracy, AverageMeter
 
-FLAGS = OmegaConf.load("./vgg_debug.yaml")
+conf_list = OmegaConf.from_cli()["--CFG_PATH"]
+FLAGS = OmegaConf.load(conf_list)
+
+if FLAGS.WANDB:
+    wandb_token = input("Wandb token: ")
+    wandb.login(key=wandb_token)
+    wandb.init(
+        project="torch-model",
+        config=dict(FLAGS),
+        save_code=True,
+    )
 
 
 def main():
@@ -59,7 +70,7 @@ def main():
 
     best_prec1 = 0
 
-    for epoch in range(100):
+    for epoch in range(FLAGS.MAX_EPOCH):
         print(f"Epoch {epoch + 1}")
 
         train(train_loader, model, criterion, optimizer, epoch)
@@ -84,6 +95,7 @@ def train(
     model.train()
 
     end = time.time()
+
     for i, (input, target) in enumerate(train_loader):
         data_time.update(time.time() - end)
         target = target.cuda()
@@ -115,6 +127,14 @@ def train(
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
                 epoch, i, len(train_loader), batch_time=batch_time,
                 data_time=data_time, loss=losses, top1=top1))
+
+    if FLAGS.WANDB:
+        wandb.log(
+            {
+                "TRN Prec@1": top1.avg,
+                "TRN CELoss": losses.avg
+            }
+        )
 
 
 def validate(val_loader, model, criterion):
@@ -161,6 +181,13 @@ def validate(val_loader, model, criterion):
 
     print(' * Prec@1 {top1.avg:.3f}'
           .format(top1=top1))
+    if FLAGS.WANDB:
+        wandb.log(
+            {
+                "Val Prec@1": top1.avg,
+                "Val CELoss": losses.avg
+            }
+        )
 
     return top1.avg
 

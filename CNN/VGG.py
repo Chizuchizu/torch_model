@@ -2,6 +2,7 @@ import math
 import torch
 from torch import nn
 
+
 # https://github.com/pytorch/vision/blob/main/torchvision/models/vgg.py
 
 class VGG(nn.Module):
