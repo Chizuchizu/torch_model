@@ -11,3 +11,16 @@
 | Training Time [m] | 56    | 65    | 71    | 79    | 
 
 ![](img/VGG_Prec1.png)
+
+
+# Run
+
+`torch-model`にいる状態で実行．
+```shell
+docker run -v $PWD:/opt/project --gpus all --rm torch:dev python3 ./CNN/train.py --CFG_PATH="./CNN/sample_cfg/vgg_debug.yaml"
+```
+
+## Reference
+
+- K. Simonyan and A. Zisserman. Very deep convolutional networks for large-scale image recognition. In
+ICLR, 2015.
