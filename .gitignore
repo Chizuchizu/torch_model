@@ -1,5 +1,7 @@
 .idea
 data
-.secret
+.secret.yaml
 CNN/wandb
+CNN/data
+CNN/Log
 CNN/__pycache__

@@ -11,7 +11,7 @@ type_transform = torchvision.transforms.transforms.Compose
 def get_CIFAR10(
         train_transform: type_transform,
         val_transform: type_transform,
-        root: str = "../data",  # working dirに入って作業することを想定
+        root: str = "CNN/data",
         train_batch_size: int = 32,
         val_batch_size: int = 32,
         num_workers: int = 10

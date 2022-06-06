@@ -1,5 +1,6 @@
 DEBUG: false
 WANDB: true
+SECRET_YAML: ".secret.yaml"
 NAME: "VGG16"
 MODEL: "vgg16"
 BATCH_SIZE: 256

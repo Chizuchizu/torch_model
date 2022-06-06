@@ -18,11 +18,12 @@ conf_list = OmegaConf.from_cli()["--CFG_PATH"]
 FLAGS = OmegaConf.load(conf_list)
 
 if FLAGS.WANDB:
-    wandb_token = input("Wandb token: ")
+    wandb_token = OmegaConf.load(FLAGS.SECRET_YAML)["wandb"]
     wandb.login(key=wandb_token)
     wandb.init(
         project="torch-model",
         config=dict(FLAGS),
+        dir="CNN/Log/",
         # save_code=True,
         name=FLAGS.NAME
     )

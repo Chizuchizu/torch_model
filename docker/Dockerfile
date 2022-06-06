@@ -7,7 +7,12 @@ RUN apt-get install -y python3 python3-pip
 RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
 
 
-RUN mkdir /api
-ADD . /api
-WORKDIR /api
+#RUN mkdir /api
+#ADD . /api
+#WORKDIR /api
+#RUN pip3 install -r ./requirements.txt
+
+RUN mkdir /opt/project
+ADD . /opt/project
+WORKDIR /opt/project
 RUN pip3 install -r ./requirements.txt
