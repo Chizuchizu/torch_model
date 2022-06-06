@@ -83,6 +83,11 @@ def main():
         best_prec1 = max(prec1, best_prec1)
 
         # modelのおもみの保存
+    wandb.log(
+        {
+            "Best prec1": best_prec1
+        }
+    )
 
 
 def train(
