@@ -2,3 +2,4 @@
 data
 .secret
 CNN/wandb
+CNN/__pycache__
